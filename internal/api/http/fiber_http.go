@@ -1,7 +1,6 @@
 package http
 
 import (
-	"context"
 	"net"
 
 	"github.com/gofiber/fiber/v2"
@@ -35,9 +34,8 @@ func NewFiberHttp() *FiberHttp {
 	return f
 }
 
-func (f *FiberHttp) Get(path string, callback func(context.Context, map[string]string, []byte, QueryParams, LocalsFunc) (interface{}, *IntegrationError)) {
+func (f *FiberHttp) Get(path string, callback FibberHandlerFunc) {
 	f.app.Get(path, func(c *fiber.Ctx) error {
-
 		localsWrapper := func(key interface{}) interface{} {
 			return c.Locals(key)
 		}
@@ -53,7 +51,7 @@ func (f *FiberHttp) Get(path string, callback func(context.Context, map[string]s
 	})
 }
 
-func (f *FiberHttp) Post(path string, callback func(context.Context, map[string]string, []byte, QueryParams, LocalsFunc) (interface{}, *IntegrationError)) {
+func (f *FiberHttp) Post(path string, callback FibberHandlerFunc) {
 	f.app.Post(path, func(c *fiber.Ctx) error {
 		localsWrapper := func(key interface{}) interface{} {
 			return c.Locals(key)
