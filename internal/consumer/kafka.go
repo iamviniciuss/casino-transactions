@@ -1,45 +1,52 @@
-// internal/consumer/kafka_consumer.go
 package consumer
 
 import (
 	"context"
-	"encoding/json"
 	"log"
 
-	"github.com/iamviniciuss/casino-transactions/internal/use_case"
 	"github.com/segmentio/kafka-go"
 )
+type KafkaHandler interface {
+	Handle(ctx context.Context, msg []byte) error
+}
 
 type KafkaConsumer struct {
 	reader   *kafka.Reader
-	consumer use_case.TransactionProcessor
+	handlers map[string]KafkaHandler
 }
 
-func NewKafkaConsumer(broker, topic string, uc use_case.TransactionProcessor) *KafkaConsumer {
+func NewKafkaConsumer(broker, topic, groupID string) *KafkaConsumer {
 	reader := kafka.NewReader(kafka.ReaderConfig{
 		Brokers: []string{broker},
 		Topic:   topic,
-		GroupID: "transaction-consumer",
+		GroupID: groupID,
 	})
-	return &KafkaConsumer{reader: reader, consumer: uc}
+	return &KafkaConsumer{
+		reader:   reader,
+		handlers: make(map[string]KafkaHandler),
+	}
+}
+
+func (kc *KafkaConsumer) RegisterHandler(key string, handler KafkaHandler) {
+	kc.handlers[key] = handler
 }
 
 func (kc *KafkaConsumer) Start(ctx context.Context) error {
 	for {
-		log.Println("Waiting for messages...")
 		m, err := kc.reader.ReadMessage(ctx)
 		if err != nil {
 			return err
 		}
 
-		var tx use_case.ProcessTransactionInput
-		if err := json.Unmarshal(m.Value, &tx); err != nil {
-			log.Printf("Invalid message: %v - %v", err, string(m.Value))
+		handlerKey := m.Key
+		handler, ok := kc.handlers[string(handlerKey)]
+		if !ok {
+			log.Printf("No handler for key: %s", string(handlerKey))
 			continue
 		}
 
-		if err := kc.consumer.Process(ctx, tx); err != nil {
-			log.Printf("Use case failed: %v", err)
+		if err := handler.Handle(ctx, m.Value); err != nil {
+			log.Printf("Handler failed: %v", err)
 			continue
 		}
 	}

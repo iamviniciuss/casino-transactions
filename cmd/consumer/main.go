@@ -29,16 +29,12 @@ func main() {
 
 	repo := repository.NewTransactionRepository(dbConn)
 	
-
-	kaf := consumer.NewKafkaConsumer(
-		configuration.KafkaURL,
-		"casino-transactions",
-		use_case.NewProcessTransaction(repo),
-	)
+	kc := consumer.NewKafkaConsumer(configuration.KafkaURL, "casino-transactions", "transaction-group")
+	kc.RegisterHandler("transaction", consumer.NewProcessTransactionHandler(use_case.NewProcessTransaction(repo)))
 
 	go func() {
 		log.Println("Starting Kafka consumer...")
-		if err := kaf.Start(ctx); err != nil {
+		if err := kc.Start(ctx); err != nil {
 			log.Printf("Kafka consumer error: %v", err)
 		}
 	}()

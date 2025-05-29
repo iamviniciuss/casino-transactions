@@ -26,4 +26,9 @@ func TestTransactionCore(t *testing.T) {
 		_, err := NewTransaction("ea5b70af-391c-484f-a569-73e5f77cbc6a" , TransactionTypeBet, -10.0)
 		assert.Error(t, err, ErrTransactionAmountZero)
 	})
+
+	t.Run("should return error when transaction type is invalid", func(t *testing.T) {
+		_, err := NewTransaction("ea5b70af-391c-484f-a569-73e5f77cbc6a" , TransactionType("invalid"), -10.0)
+		assert.Error(t, err, ErrInvalidTransactionType)
+	})
 }
