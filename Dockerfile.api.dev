@@ -1,0 +1,69 @@
+# Etapa 1: Builder com Go + dependências
+FROM golang:1.24.3-alpine AS builder
+
+# Argumento para librdkafka
+ARG LIBRD_VER=1.9.2
+
+# Dependências de build
+RUN apk add --no-cache \
+    bash \
+    make \
+    wget \
+    git \
+    gcc \
+    g++ \
+    musl-dev \
+    zlib-dev \
+    openssl \
+    zstd-dev \
+    pkgconfig \
+    libc-dev \
+    ca-certificates
+
+# Instalação da librdkafka
+WORKDIR /tmp
+RUN wget https://github.com/edenhill/librdkafka/archive/v${LIBRD_VER}.tar.gz \
+    && tar -xvf v${LIBRD_VER}.tar.gz \
+    && cd librdkafka-${LIBRD_VER} \
+    && ./configure --prefix=/usr \
+    && make && make install && make clean \
+    && cd .. && rm -rf librdkafka*
+
+# Configura PKG_CONFIG_PATH
+ENV PKG_CONFIG_PATH="/usr/lib/pkgconfig"
+
+# Workspace do Go
+WORKDIR /app
+
+# Instala ferramentas Go
+COPY go.mod ./
+RUN go mod tidy \
+    && go install github.com/go-delve/delve/cmd/dlv@latest \
+    && go install github.com/air-verse/air@latest 
+    # && go install github.com/swaggo/swag/cmd/swag@latest
+
+COPY . .
+
+RUN chmod +x ./entrypoint_dev.sh
+
+# Etapa 2: imagem leve para dev ou prod
+FROM golang:1.24.3-alpine AS dev
+
+COPY --from=builder /app /app
+COPY --from=builder /go/bin /go/bin
+
+WORKDIR /app
+
+ENV CGO_ENABLED=0 GOOS=linux GOARCH=amd64
+
+RUN go install github.com/go-delve/delve/cmd/dlv@latest
+RUN go install github.com/air-verse/air@latest 
+
+ENV PATH="$PATH:/go/bin"
+ENV PATH="/go/bin:$PATH"
+
+ENV CGO_ENABLED=0 GOOS=linux GOARCH=amd64
+
+EXPOSE 9095
+
+ENTRYPOINT ["sh", "./entrypoint_dev.sh"]
