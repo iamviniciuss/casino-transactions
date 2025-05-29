@@ -10,8 +10,6 @@ import (
 )
 
 func TestProcessTransactionUseCase(t *testing.T) {
-
-
 	t.Run("Process valid transaction", func(t *testing.T) {
 		transactionRepo := mocks.NewMockTransactionRepository()
 

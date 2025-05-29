@@ -25,16 +25,16 @@ func getFreePortListener(t *testing.T) (net.Listener, int) {
 }
 
 type fibberHTTPMethod string
+
 const (
-	FIBER_GET fibberHTTPMethod = "GET"
+	FIBER_GET  fibberHTTPMethod = "GET"
 	FIBER_POST fibberHTTPMethod = "POST"
 )
 
-func setupTestServer(t *testing.T, method fibberHTTPMethod, route string, handler FibberHandlerFunc) (*FiberHttp, int) {
+func setupTestServer(t *testing.T, method fibberHTTPMethod, route string, handler FiberHandlerFunc) (*FiberHttp, int) {
 	t.Helper()
 
 	app := NewFiberHttp()
-
 
 	if method == FIBER_GET {
 		app.Get(route, handler)
@@ -86,7 +86,6 @@ func TestFiberGET_HTTP(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, "\"GET - OK\"", string(body))
 	})
-	
 
 	t.Run("GET /fiber - fail", func(t *testing.T) {
 		_, port := setupTestServer(t, FIBER_GET, "/fiber", func(ctx context.Context, m map[string]string, b []byte, qp QueryParams, lf LocalsFunc) (interface{}, *IntegrationError) {
@@ -113,14 +112,13 @@ func TestFiberGET_HTTP(t *testing.T) {
 	})
 }
 
-
 func TestFiberPOST_HTTP(t *testing.T) {
 	t.Run("POST /fiber - success", func(t *testing.T) {
 		_, port := setupTestServer(t, FIBER_POST, "/fiber", func(ctx context.Context, m map[string]string, b []byte, qp QueryParams, lf LocalsFunc) (interface{}, *IntegrationError) {
 			return "POST - OK", nil
 		})
 
-		resp, err := http.Post("http://localhost:" + strconv.Itoa(port) + "/fiber", "application/json", nil)
+		resp, err := http.Post("http://localhost:"+strconv.Itoa(port)+"/fiber", "application/json", nil)
 
 		assert.NoError(t, err)
 		assert.Equal(t, 200, resp.StatusCode)
@@ -140,7 +138,7 @@ func TestFiberPOST_HTTP(t *testing.T) {
 			}
 		})
 
-	resp, err := http.Post("http://localhost:" + strconv.Itoa(port) + "/fiber", "application/json", nil)
+		resp, err := http.Post("http://localhost:"+strconv.Itoa(port)+"/fiber", "application/json", nil)
 
 		assert.NoError(t, err)
 		assert.Equal(t, 500, resp.StatusCode)

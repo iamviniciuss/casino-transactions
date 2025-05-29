@@ -5,13 +5,13 @@ import (
 	"net"
 )
 
-type FibberHandlerFunc func(context.Context, map[string]string, []byte, QueryParams, LocalsFunc) (interface{}, *IntegrationError) 
+type FiberHandlerFunc func(context.Context, map[string]string, []byte, QueryParams, LocalsFunc) (interface{}, *IntegrationError)
 
 type LocalsFunc func(key interface{}) interface{}
 
 type HttpService interface {
-	Get(path string, callback FibberHandlerFunc)
-	Post(path string, callback FibberHandlerFunc)
+	Get(path string, callback FiberHandlerFunc)
+	Post(path string, callback FiberHandlerFunc)
 	ListenAndServe(port string) error
 	Listen(listener net.Listener) error
 }

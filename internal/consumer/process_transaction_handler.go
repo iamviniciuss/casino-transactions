@@ -10,8 +10,8 @@ import (
 )
 
 type ProcessTransactionHandlerInput struct {
-	UserID          string `json:"user_id"`
-	Amount          float64 `json:"amount"`
+	UserID          string               `json:"user_id"`
+	Amount          float64              `json:"amount"`
 	TransactionType core.TransactionType `json:"transaction_type"`
 }
 

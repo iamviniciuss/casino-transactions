@@ -34,7 +34,7 @@ func NewFiberHttp() *FiberHttp {
 	return f
 }
 
-func (f *FiberHttp) Get(path string, callback FibberHandlerFunc) {
+func (f *FiberHttp) Get(path string, callback FiberHandlerFunc) {
 	f.app.Get(path, func(c *fiber.Ctx) error {
 		localsWrapper := func(key interface{}) interface{} {
 			return c.Locals(key)
@@ -51,7 +51,7 @@ func (f *FiberHttp) Get(path string, callback FibberHandlerFunc) {
 	})
 }
 
-func (f *FiberHttp) Post(path string, callback FibberHandlerFunc) {
+func (f *FiberHttp) Post(path string, callback FiberHandlerFunc) {
 	f.app.Post(path, func(c *fiber.Ctx) error {
 		localsWrapper := func(key interface{}) interface{} {
 			return c.Locals(key)

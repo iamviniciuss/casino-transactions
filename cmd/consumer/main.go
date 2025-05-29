@@ -20,7 +20,6 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-
 	dbConn, err := sql.Open("postgres", configuration.PostgresDSN)
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
@@ -28,7 +27,7 @@ func main() {
 	}
 
 	repo := repository.NewTransactionRepository(dbConn)
-	
+
 	kc := consumer.NewKafkaConsumer(configuration.KafkaURL, "casino-transactions", "transaction-group")
 	kc.RegisterHandler("transaction", consumer.NewProcessTransactionHandler(use_case.NewProcessTransaction(repo)))
 
