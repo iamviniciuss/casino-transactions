@@ -11,8 +11,9 @@ import (
 
 type (
 	Config struct {
-		Port     string `envconfig:"PORT" default:":9095"`
-		KafkaURL string `envconfig:"KAFKA_URL" default:"kafka:29092"`
+		Port        string `envconfig:"PORT" default:":9095"`
+		KafkaURL    string `envconfig:"KAFKA_URL" default:"kafka:29092"`
+		PostgresDSN string `envconfig:"POSTGRES_DSN" default:"host=postgres user=casino password=casino123 dbname=casino_db port=5432 sslmode=disable"`
 	}
 )
 

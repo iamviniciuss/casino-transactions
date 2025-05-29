@@ -1,4 +1,4 @@
-package test
+package router
 
 import (
 	"io"
@@ -9,7 +9,6 @@ import (
 	"time"
 
 	httpService "github.com/iamviniciuss/casino-transactions/internal/api/http"
-	"github.com/iamviniciuss/casino-transactions/internal/api/router"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -24,7 +23,7 @@ func getFreeListener() (net.Listener, int, error) {
 
 func TestHealthCheck(t *testing.T) {
 	app := httpService.NewFiberHttp()
-	router.DataSourceRouter(app)
+	DataSourceRouter(app)
 	port := 5271
 
 	go func() {

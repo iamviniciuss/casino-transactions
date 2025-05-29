@@ -35,7 +35,7 @@ func (kc *KafkaConsumer) Start(ctx context.Context) error {
 
 		var tx core.Transaction
 		if err := json.Unmarshal(m.Value, &tx); err != nil {
-			log.Printf("Invalid message: %v", err, string(m.Value))
+			log.Printf("Invalid message: %v - %v", err, string(m.Value))
 			continue
 		}
 
