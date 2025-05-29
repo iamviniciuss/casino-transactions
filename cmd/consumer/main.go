@@ -2,12 +2,14 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/iamviniciuss/casino-transactions/internal/consumer"
+	"github.com/iamviniciuss/casino-transactions/internal/repository"
 	"github.com/iamviniciuss/casino-transactions/internal/use_case"
 	"github.com/iamviniciuss/casino-transactions/pkg/config"
 )
@@ -18,10 +20,20 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+
+	dbConn, err := sql.Open("postgres", configuration.PostgresDSN)
+	if err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
+		panic(err)
+	}
+
+	repo := repository.NewTransactionRepository(dbConn)
+	
+
 	kaf := consumer.NewKafkaConsumer(
 		configuration.KafkaURL,
 		"casino-transactions",
-		use_case.NewProcessTransaction(),
+		use_case.NewProcessTransaction(repo),
 	)
 
 	go func() {

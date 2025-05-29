@@ -20,10 +20,10 @@ func NewTransactionRepository(db *sql.DB) *TransactionRepository {
 
 func (r *TransactionRepository) Save(ctx context.Context, transaction core.Transaction) error {
 	query := "INSERT INTO transactions (id, user_id, amount, transaction_type, timestamp) VALUES ($1, $2, $3, $4, $5);"
-	
+
 	_, err := r.db.ExecContext(ctx, query, transaction.ID, transaction.UserID, transaction.Amount, transaction.Type, transaction.Timestamp)
 	if err != nil {
-		return err	
+		return err
 	}
 
 	return nil

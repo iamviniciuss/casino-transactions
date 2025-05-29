@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"log"
 
-	"github.com/iamviniciuss/casino-transactions/internal/core"
 	"github.com/iamviniciuss/casino-transactions/internal/use_case"
 	"github.com/segmentio/kafka-go"
 )
@@ -33,7 +32,7 @@ func (kc *KafkaConsumer) Start(ctx context.Context) error {
 			return err
 		}
 
-		var tx core.Transaction
+		var tx use_case.ProcessTransactionInput
 		if err := json.Unmarshal(m.Value, &tx); err != nil {
 			log.Printf("Invalid message: %v - %v", err, string(m.Value))
 			continue

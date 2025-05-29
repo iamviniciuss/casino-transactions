@@ -47,7 +47,6 @@ func SetupPostgres(t *testing.T) (*sql.DB, func()) {
 	_, err = dbConn.Exec(string(initSQL))
 	require.NoError(t, err)
 
-
 	return dbConn, func() {
 		_ = dbConn.Close()
 		_ = container.Terminate(ctx)
