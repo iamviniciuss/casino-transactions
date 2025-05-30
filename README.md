@@ -96,6 +96,11 @@ Query Parameters:
 }
 ```
 
+### cURL
+```bash
+curl -X GET "http://127.0.0.1:9095/transactions?user_id=62d54d96-88f4-4111-8564-c043d710bdcd&limit=10&offset=0"
+```
+
 ---
 
 ## 🧪 Testing
@@ -139,5 +144,5 @@ Current coverage: 89.5%
 
 ---
 
-## 🙌 Author
+## Author
 Vinicius ☕
