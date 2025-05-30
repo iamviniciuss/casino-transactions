@@ -14,15 +14,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// func getFreeListener() (net.Listener, int, error) {
-// 	listener, err := net.Listen("tcp", ":0")
-// 	if err != nil {
-// 		return nil, 0, err
-// 	}
-// 	port := listener.Addr().(*net.TCPAddr).Port
-// 	return listener, port, nil
-// }
-
 func TestTransactionController(t *testing.T) {
 	dbConn, teardown := test_utils.SetupPostgres(t)
 	defer teardown()

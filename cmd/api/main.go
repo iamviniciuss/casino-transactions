@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	fmt.Println("Hello, World!")
+	fmt.Println("Starting Casino Transactions API...")
 
 	configuration := config.NewConfig()
 

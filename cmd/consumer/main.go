@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -15,6 +16,8 @@ import (
 )
 
 func main() {
+	fmt.Println("Starting Casino Transactions Consumer...")
+
 	configuration := config.NewConfig()
 
 	ctx, cancel := context.WithCancel(context.Background())

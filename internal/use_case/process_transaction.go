@@ -1,4 +1,3 @@
-// internal/application/usecase/process_transaction.go
 package use_case
 
 import (
