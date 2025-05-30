@@ -105,6 +105,8 @@ Query Parameters:
 ```bash
 make test
 make test-coverage
+
+Current coverage: 89.5%
 ```
 
 ---
