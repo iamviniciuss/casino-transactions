@@ -15,6 +15,11 @@ var (
 	}
 )
 
+const (
+	defaultLimit  = 20
+	defaultOffset = 0
+)
+
 type PaginatedResponse struct {
 	Items  []core.Transaction `json:"items"`
 	Total  int                `json:"total"`
@@ -39,8 +44,8 @@ func (ctr *TransactionController) GetTransactions(ctx context.Context, m map[str
 	}
 
 	txType := string(qp.GetParam("transaction_type"))
-	limit, _ := strconv.Atoi(string(qp.GetParam("limit")))
-	offset, _ := strconv.Atoi(string(qp.GetParam("offset")))
+
+	limit, offset := ctr.parsePaginationParams(qp)
 
 	filter := core.TransactionFilter{
 		UserID: userID,
@@ -62,4 +67,20 @@ func (ctr *TransactionController) GetTransactions(ctx context.Context, m map[str
 		Limit:  limit,
 		Offset: offset,
 	}, nil
+}
+
+func (ctr *TransactionController) parsePaginationParams(qp http.QueryParams) (limit int, offset int) {
+	limitStr := string(qp.GetParam("limit"))
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil || limit <= 0 {
+		limit = defaultLimit
+	}
+
+	offsetStr := string(qp.GetParam("offset"))
+	offset, err = strconv.Atoi(offsetStr)
+	if err != nil || offset < 0 {
+		offset = defaultOffset
+	}
+
+	return limit, offset
 }
