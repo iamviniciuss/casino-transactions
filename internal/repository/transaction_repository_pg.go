@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	"github.com/iamviniciuss/casino-transactions/internal/core"
 	_ "github.com/lib/pq"
@@ -44,4 +45,43 @@ func (r *TransactionRepository) FindByID(ctx context.Context, transactionID stri
 	}
 
 	return transaction, nil
+}
+
+func (r *TransactionRepository) FindByFilter(ctx context.Context, f core.TransactionFilter) ([]core.Transaction, int, error) {
+	baseQuery := `FROM transactions WHERE user_id = $1`
+	args := []interface{}{f.UserID}
+	i := 2
+
+	if f.Type != "" {
+		baseQuery += fmt.Sprintf(" AND transaction_type = $%d", i)
+		args = append(args, f.Type)
+		i++
+	}
+
+	var total int
+	countQuery := "SELECT COUNT(*) " + baseQuery
+	err := r.db.QueryRowContext(ctx, countQuery, args...).Scan(&total)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	query := fmt.Sprintf("SELECT id, user_id, amount, transaction_type, timestamp %s ORDER BY timestamp DESC LIMIT $%d OFFSET $%d", baseQuery, i, i+1)
+	args = append(args, f.Limit, f.Offset)
+
+	rows, err := r.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
+
+	transactions := []core.Transaction{}
+	for rows.Next() {
+		var tx core.Transaction
+		if err := rows.Scan(&tx.ID, &tx.UserID, &tx.Amount, &tx.Type, &tx.Timestamp); err != nil {
+			return nil, 0, err
+		}
+		transactions = append(transactions, tx)
+	}
+
+	return transactions, total, nil
 }

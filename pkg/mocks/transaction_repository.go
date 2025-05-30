@@ -24,3 +24,8 @@ func (m *mockTransactionRepository) FindByID(ctx context.Context, transactionID 
 	args := m.Called(ctx, transactionID)
 	return args.Get(0).(core.Transaction), args.Error(1)
 }
+
+func (m *mockTransactionRepository) FindByFilter(ctx context.Context, filter core.TransactionFilter) ([]core.Transaction, int, error) {
+	args := m.Called(ctx, filter)
+	return args.Get(0).([]core.Transaction), args.Get(1).(int), args.Error(1)
+}

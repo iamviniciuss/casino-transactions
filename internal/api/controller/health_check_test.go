@@ -1,4 +1,4 @@
-package router
+package controller
 
 import (
 	"io"
@@ -23,7 +23,8 @@ func getFreeListener() (net.Listener, int, error) {
 
 func TestHealthCheck(t *testing.T) {
 	app := httpService.NewFiberHttp()
-	DataSourceRouter(app, nil)
+	app.Get("/health", NewHealthCheckController().Check)
+	
 	port := 5271
 
 	go func() {
