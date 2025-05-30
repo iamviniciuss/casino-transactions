@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"path/filepath"
+	"runtime"
 	"testing"
 
 	_ "github.com/lib/pq"
@@ -41,7 +43,12 @@ func SetupPostgres(t *testing.T) (*sql.DB, func()) {
 	dbConn, err := sql.Open("postgres", dsn)
 	require.NoError(t, err)
 
-	initSQL, err := os.ReadFile("./../../init.sql")
+
+	_, currentFile, _, _ := runtime.Caller(0)
+	basePath := filepath.Dir(currentFile)
+	sqlPath := filepath.Join(basePath, "..", "..", "init.sql")
+
+	initSQL, err := os.ReadFile(sqlPath)
 	require.NoError(t, err)
 
 	_, err = dbConn.Exec(string(initSQL))

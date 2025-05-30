@@ -8,6 +8,13 @@ import (
 	"github.com/iamviniciuss/casino-transactions/internal/core"
 )
 
+var (
+	ErrUserIDRequired = http.IntegrationError{
+		StatusCode: 400,
+		Message:    "user_id is required",
+	}
+)
+
 type PaginatedResponse struct {
 	Items  []core.Transaction `json:"items"`
 	Total  int                `json:"total"`
@@ -28,10 +35,7 @@ func NewTransactionController(transactionRepository core.TransactionRepository) 
 func (ctr *TransactionController) GetTransactions(ctx context.Context, m map[string]string, b []byte, qp http.QueryParams, lf http.LocalsFunc) (interface{}, *http.IntegrationError) {
 	userID := string(qp.GetParam("user_id"))
 	if userID == "" {
-		return nil, &http.IntegrationError{
-			StatusCode: 400,
-			Message:    "user_id is required",
-		}
+		return nil, &ErrUserIDRequired
 	}
 
 	txType := string(qp.GetParam("transaction_type"))
@@ -48,7 +52,7 @@ func (ctr *TransactionController) GetTransactions(ctx context.Context, m map[str
 	items, total, err := ctr.transactionRepository.FindByFilter(context.Background(), filter)
 	if err != nil {
 		return nil, &http.IntegrationError{
-			StatusCode: 500,
+			StatusCode: 400,
 			Message:    err.Error(),
 		}
 	}

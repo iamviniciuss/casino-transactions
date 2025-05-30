@@ -5,6 +5,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/valyala/fasthttp"
 )
 
 type FiberHttp struct {
@@ -18,6 +19,10 @@ func NewFiberHttp() *FiberHttp {
 	f.app = fiber.New()
 
 	f.app.Use(cors.New())
+	f.app.Group("/", func(c *fiber.Ctx) error {
+		f.CustomParams = NewFiberQueryParams(c.Context().QueryArgs())
+		return c.Next()
+	})
 
 	f.app.Use(func(c *fiber.Ctx) error {
 		c.Set("X-XSS-Protection", "1; mode=block")
@@ -78,4 +83,26 @@ func (f *FiberHttp) Listen(listener net.Listener) error {
 
 func (f *FiberHttp) Shutdown() error {
 	return f.app.Shutdown()
+}
+
+
+type FiberQueryParams struct {
+	Args *fasthttp.Args
+}
+
+func NewFiberQueryParams(args *fasthttp.Args) *FiberQueryParams {
+	return &FiberQueryParams{
+		Args: args,
+	}
+}
+
+func (fqp *FiberQueryParams) GetParam(key string) []byte {
+	if !fqp.Args.Has(key) {
+		return []byte{}
+	}
+	return fqp.Args.Peek(key)
+}
+
+func (fqp *FiberQueryParams) AddParam(key string, value string) {
+	fqp.Args.Add(key, value)
 }
