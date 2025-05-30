@@ -2,13 +2,14 @@ package consumer
 
 import (
 	"context"
+	"encoding/json"
 	"log"
 	"testing"
 	"time"
 
+	"github.com/iamviniciuss/casino-transactions/internal/core"
+	"github.com/iamviniciuss/casino-transactions/pkg/test_utils"
 	"github.com/segmentio/kafka-go"
-
-	// "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -25,53 +26,68 @@ func (m *mockHandler) Handle(ctx context.Context, msg []byte) error {
 }
 
 func TestKafkaConsumer_Start(t *testing.T) {
-	// Setup Kafka container
-	// broker, terminate := test_utils.SetupKafka(t)
-	// defer terminate()
+	ctx := context.Background()
+
+	broker, terminate, err := test_utils.SetupKafkaContainer(t, context.Background())
+	require.NoError(t, err)
+	defer terminate(t.Context())
 
 	topic := "test-topic"
 	groupID := "test-group"
-	messageKey := "my-key"
-	messageValue := []byte("hello world")
+	messageKey := "transaction-key"
 
-	broker := "localhost:9092"
-	ctx, cancel := context.WithTimeout(context.Background(), 40*time.Second)
-	defer cancel()
-	conn, err := kafka.DialContext(ctx, "tcp", broker)
-	require.NoError(t, err)
-	defer conn.Close()
-
-	for i := 0; i < 10; i++ {
-		log.Println("Creating topic:", topic)
-		err = conn.CreateTopics(kafka.TopicConfig{
-			Topic:             topic,
-			NumPartitions:     1,
-			ReplicationFactor: 1,
-		})
-		if err == nil {
-			break
-		}
-		time.Sleep(2 * time.Second)
+	payload := map[string]interface{}{
+		"user_id":          "912457bc-7eed-4170-aba5-8a13c35a9d8a",
+		"transaction_type": "win",
+		"amount":           256.75,
 	}
+	messageValue, err := json.Marshal(payload)
 	require.NoError(t, err)
+
+	require.NoError(t, createKafkaTopic(ctx, broker, topic))
 
 	handler := &mockHandler{}
+	consumer := NewKafkaConsumer(broker, topic, groupID)
+	consumer.RegisterHandler(messageKey, handler)
 
-	kc := NewKafkaConsumer(broker, topic, groupID)
-	kc.RegisterHandler(messageKey, handler)
-
-	ctx2, cancel2 := context.WithCancel(context.Background())
-	defer cancel2()
+	consumerCtx, cancelConsumer := context.WithCancel(context.Background())
 
 	go func() {
-		err := kc.Start(ctx2)
-		if err != nil {
-			t.Logf("consumer stopped: %v", err)
-		}
+		consumer.Start(consumerCtx)
 	}()
 
-	time.Sleep(4 * time.Second)
+	err = sendKafkaMessage(broker, topic, messageKey, messageValue)
+	require.NoError(t, err)
 
+	waitForConsumerReady()
+	cancelConsumer()
+
+	var data ProcessTransactionHandlerInput
+	err = json.Unmarshal(handler.value, &data)
+	require.NoError(t, err)
+
+	assert.True(t, handler.called, "handler should have been called")
+	assert.Equal(t, "912457bc-7eed-4170-aba5-8a13c35a9d8a", data.UserID, "user_id should match")
+	assert.Equal(t, core.TransactionTypeWin, data.TransactionType, "transaction_type should match")
+	assert.Equal(t, 256.75, data.Amount, "amount should match")
+}
+
+func createKafkaTopic(ctx context.Context, broker, topic string) error {
+	conn, err := kafka.DialContext(ctx, "tcp", broker)
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	log.Println("Creating topic:", topic)
+	return conn.CreateTopics(kafka.TopicConfig{
+		Topic:             topic,
+		NumPartitions:     1,
+		ReplicationFactor: 1,
+	})
+}
+
+func sendKafkaMessage(broker, topic, key string, value []byte) error {
 	writer := &kafka.Writer{
 		Addr:     kafka.TCP(broker),
 		Topic:    topic,
@@ -79,14 +95,12 @@ func TestKafkaConsumer_Start(t *testing.T) {
 	}
 	defer writer.Close()
 
-	err = writer.WriteMessages(context.Background(), kafka.Message{
-		Key:   []byte(messageKey),
-		Value: messageValue,
+	return writer.WriteMessages(context.Background(), kafka.Message{
+		Key:   []byte(key),
+		Value: value,
 	})
-	require.NoError(t, err)
+}
 
+func waitForConsumerReady() {
 	time.Sleep(10 * time.Second)
-
-	assert.True(t, handler.called, "handler should have been called")
-	assert.Equal(t, messageValue, handler.value, "message value should match")
 }
