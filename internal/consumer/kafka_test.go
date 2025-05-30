@@ -55,7 +55,6 @@ func TestKafkaConsumer_Start(t *testing.T) {
 	}
 	require.NoError(t, err)
 
-
 	handler := &mockHandler{}
 
 	kc := NewKafkaConsumer(broker, topic, groupID)
@@ -86,7 +85,7 @@ func TestKafkaConsumer_Start(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	time.Sleep(5 * time.Second)
+	time.Sleep(10 * time.Second)
 
 	assert.True(t, handler.called, "handler should have been called")
 	assert.Equal(t, messageValue, handler.value, "message value should match")

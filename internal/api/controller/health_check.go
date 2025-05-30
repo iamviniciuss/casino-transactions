@@ -10,8 +10,7 @@ type HealthCheckController struct {
 }
 
 func NewHealthCheckController() *HealthCheckController {
-	return &HealthCheckController{
-	}
+	return &HealthCheckController{}
 }
 
 func (ctr *HealthCheckController) Check(ctx context.Context, m map[string]string, b []byte, qp http.QueryParams, lf http.LocalsFunc) (interface{}, *http.IntegrationError) {

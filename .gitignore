@@ -1,3 +1,5 @@
 .build
 .docker
 tmp
+scripts/node_modules
+coverage.out

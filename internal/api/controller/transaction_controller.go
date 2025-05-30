@@ -43,10 +43,10 @@ func (ctr *TransactionController) GetTransactions(ctx context.Context, m map[str
 	offset, _ := strconv.Atoi(string(qp.GetParam("offset")))
 
 	filter := core.TransactionFilter{
-		UserID:    userID,
-		Type:      txType,
-		Limit:     limit,
-		Offset:    offset,
+		UserID: userID,
+		Type:   txType,
+		Limit:  limit,
+		Offset: offset,
 	}
 
 	items, total, err := ctr.transactionRepository.FindByFilter(context.Background(), filter)
@@ -57,8 +57,8 @@ func (ctr *TransactionController) GetTransactions(ctx context.Context, m map[str
 		}
 	}
 	return PaginatedResponse{
-		Items: items,
-		Total: total,
+		Items:  items,
+		Total:  total,
 		Limit:  limit,
 		Offset: offset,
 	}, nil

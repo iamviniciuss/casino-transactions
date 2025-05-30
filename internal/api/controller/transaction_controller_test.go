@@ -31,7 +31,7 @@ func TestTransactionController(t *testing.T) {
 
 	app := httpService.NewFiberHttp()
 	app.Get("/transactions", NewTransactionController(repo).GetTransactions)
-	
+
 	port := 5274
 
 	go func() {
@@ -61,7 +61,6 @@ func TestTransactionController(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotNil(t, response)
 
-		
 		assert.Equal(t, 0, response.Total)
 		assert.Equal(t, 0, response.Offset)
 		assert.Equal(t, 10, response.Limit)

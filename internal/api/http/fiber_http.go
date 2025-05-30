@@ -85,7 +85,6 @@ func (f *FiberHttp) Shutdown() error {
 	return f.app.Shutdown()
 }
 
-
 type FiberQueryParams struct {
 	Args *fasthttp.Args
 }

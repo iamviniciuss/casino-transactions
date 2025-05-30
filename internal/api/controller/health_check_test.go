@@ -24,7 +24,7 @@ func getFreeListener() (net.Listener, int, error) {
 func TestHealthCheck(t *testing.T) {
 	app := httpService.NewFiberHttp()
 	app.Get("/health", NewHealthCheckController().Check)
-	
+
 	port := 5271
 
 	go func() {

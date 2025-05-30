@@ -18,11 +18,11 @@ type KafkaConsumer struct {
 
 func NewKafkaConsumer(broker, topic, groupID string) *KafkaConsumer {
 	reader := kafka.NewReader(kafka.ReaderConfig{
-		Brokers: []string{broker},
-		Topic:   topic,
-		GroupID: groupID,
+		Brokers:       []string{broker},
+		Topic:         topic,
+		GroupID:       groupID,
 		QueueCapacity: 100,
-		MaxWait:  10 * 1000000,
+		MaxWait:       10 * 1000000,
 	})
 
 	return &KafkaConsumer{

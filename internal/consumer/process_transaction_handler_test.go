@@ -15,7 +15,7 @@ func TestProcessTransactionHandler(t *testing.T) {
 		transactionRepo := mocks.NewMockTransactionRepository()
 
 		transactionRepo.On("Save", t.Context(), mock.Anything).Return(nil)
-		
+
 		handler := NewProcessTransactionHandler(use_case.NewProcessTransaction(transactionRepo))
 		err := handler.Handle(t.Context(), []byte(`{
 			"user_id": "ea5b70af-391c-484f-a569-73e5f77cbc6a",
@@ -39,7 +39,7 @@ func TestProcessTransactionHandler(t *testing.T) {
 		transactionRepo := mocks.NewMockTransactionRepository()
 
 		transactionRepo.On("Save", t.Context(), mock.Anything).Return(nil)
-		
+
 		handler := NewProcessTransactionHandler(use_case.NewProcessTransaction(transactionRepo))
 		err := handler.Handle(t.Context(), []byte(`{invalid json}`))
 
