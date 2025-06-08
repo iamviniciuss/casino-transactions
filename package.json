@@ -10,7 +10,10 @@
     "test:coverage": "npm run test-generate-coverfile && npm run test-exec-cover-html && npm run test-export-html",
     "test": "go clean -testcache && go test ./...",
     "go-path": "PATH=$(go env GOPATH)/bin:$PATH",
-    "api-docs": "swag init -g src/main.go  --output src/docs"
+    "api-docs": "swag init -g src/main.go  --output src/docs",
+    "prepare": "husky install",
+    "postinstall": "husky install"
+
   },
   "repository": {
     "type": "git",
@@ -21,5 +24,10 @@
   "bugs": {
     "url": "https://github.com/crewhu/crewhu-trends-api/issues"
   },
-  "homepage": "https://github.com/crewhu/crewhu-trends-api#readme"
+  "homepage": "https://github.com/crewhu/crewhu-trends-api#readme",
+  "devDependencies": {
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
+    "husky": "^9.1.7"
+  }
 }

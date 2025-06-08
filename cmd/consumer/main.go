@@ -1,3 +1,4 @@
+// Description: This is the main entry point for the Casino Transactions Consumer application.
 package main
 
 import (
@@ -25,7 +26,6 @@ func main() {
 
 	dbConn, err := sql.Open("postgres", configuration.PostgresDSN)
 	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
 		panic(err)
 	}
 

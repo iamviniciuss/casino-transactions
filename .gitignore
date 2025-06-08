@@ -4,3 +4,4 @@ tmp
 scripts/node_modules
 poc
 k8s/node_modules
+node_modules
