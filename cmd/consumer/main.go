@@ -16,7 +16,7 @@ import (
 )
 
 func main() {
-	fmt.Println("Starting Casino Transactions Consumer...")
+	fmt.Println("Starting Casino Transactions Consumer... 2")
 
 	configuration := config.NewConfig()
 
