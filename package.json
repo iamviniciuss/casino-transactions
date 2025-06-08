@@ -1,0 +1,25 @@
+{
+  "name": "crewhu-trends-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test-generate-coverfile": "go test -coverprofile=coverage.out $(go list ./... | grep -v /pkg | grep -v /cmd)",
+    "test-exec-cover-html": "go tool cover -func=coverage.out",
+    "test-export-html": "go tool cover -html=coverage.out",
+    "test:coverage": "npm run test-generate-coverfile && npm run test-exec-cover-html && npm run test-export-html",
+    "test": "go clean -testcache && go test ./...",
+    "go-path": "PATH=$(go env GOPATH)/bin:$PATH",
+    "api-docs": "swag init -g src/main.go  --output src/docs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/crewhu/crewhu-trends-api.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/crewhu/crewhu-trends-api/issues"
+  },
+  "homepage": "https://github.com/crewhu/crewhu-trends-api#readme"
+}
