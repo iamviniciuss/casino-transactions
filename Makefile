@@ -1,7 +1,7 @@
 .PHONY: casino transactions
 
 test-coverage: 
-	go test -coverprofile=coverage.out $(shell go list ./... | grep -v /pkg | grep -v /cmd)
+	go test -coverprofile=coverage.out $(shell go list ./... | grep -v /pkg/config  | grep -v /pkg/mocks  | grep -v /pkg/test_utils | grep -v /cmd)
 	go tool cover -func=coverage.out
 	go tool cover -html=coverage.out
 

@@ -125,8 +125,7 @@ Current coverage: 89.5%
 
 /internal
   /api
-    /controller  # HTTP controllers (parse input, validate, call use cases)
-    /http        # Fiber setup, error handling, query parameter abstraction
+    /http  # HTTP controllers (parse input, validate, call use cases)
     /router      # HTTP route definitions and bindings
   /consumer      # Kafka consumer loop and handler registration
   /core          # Domain logic and repository interfaces (Transaction, Filter, Errors)
@@ -135,6 +134,8 @@ Current coverage: 89.5%
 
 /pkg
   /config        # Environment and configuration loader
+  shared          # Shared utilities (e.g., logging, error handling)
+    /http        # Fiber setup, error handling, query parameter abstraction
   /testutils     # Testcontainers setup for Kafka and PostgreSQL
   /mocks         # Unit test mocks (e.g., repository, use cases)
 ```
