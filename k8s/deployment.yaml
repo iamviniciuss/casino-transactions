@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cassino-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cassino-api
+  template:
+    metadata:
+      labels:
+        app: cassino-api
+    spec:
+      containers:
+        - name: api
+          image: vsantos98/cassino-api:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9095
+          resources:
+            requests:
+              cpu: "512m"
+              memory: "256Mi"
+            limits:
+              cpu: "1024m"
+              memory: "512Mi"
+          env:
+            - name: POSTGRES_DSN
+              valueFrom:
+                configMapKeyRef:
+                  name: cassino-config
+                  key: db_url
