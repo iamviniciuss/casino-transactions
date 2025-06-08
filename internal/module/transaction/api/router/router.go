@@ -1,9 +1,9 @@
 package router
 
 import (
-	"github.com/iamviniciuss/casino-transactions/internal/api/controller"
-	"github.com/iamviniciuss/casino-transactions/internal/api/http"
-	"github.com/iamviniciuss/casino-transactions/internal/core"
+	controller "github.com/iamviniciuss/casino-transactions/internal/module/transaction/api/http"
+	"github.com/iamviniciuss/casino-transactions/internal/module/transaction/core"
+	"github.com/iamviniciuss/casino-transactions/pkg/shared/http"
 )
 
 func DataSourceRouter(httpService http.HttpService, transactionRepository core.TransactionRepository) {

@@ -10,10 +10,11 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/iamviniciuss/casino-transactions/internal/consumer"
-	"github.com/iamviniciuss/casino-transactions/internal/repository"
-	"github.com/iamviniciuss/casino-transactions/internal/use_case"
+	"github.com/iamviniciuss/casino-transactions/internal/module/transaction/consumer"
+	"github.com/iamviniciuss/casino-transactions/internal/module/transaction/repository"
+	"github.com/iamviniciuss/casino-transactions/internal/module/transaction/use_case"
 	"github.com/iamviniciuss/casino-transactions/pkg/config"
+	"github.com/iamviniciuss/casino-transactions/pkg/shared/message_broker"
 )
 
 func main() {
@@ -31,7 +32,7 @@ func main() {
 
 	repo := repository.NewTransactionRepository(dbConn)
 
-	kc := consumer.NewKafkaConsumer(configuration.KafkaURL, "casino-transactions", "transaction-group")
+	kc := message_broker.NewKafkaConsumer(configuration.KafkaURL, "casino-transactions", "transaction-group")
 	kc.RegisterHandler("transaction", consumer.NewProcessTransactionHandler(use_case.NewProcessTransaction(repo)))
 
 	go func() {

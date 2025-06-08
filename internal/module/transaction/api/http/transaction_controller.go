@@ -4,8 +4,8 @@ import (
 	"context"
 	"strconv"
 
-	"github.com/iamviniciuss/casino-transactions/internal/api/http"
-	"github.com/iamviniciuss/casino-transactions/internal/core"
+	"github.com/iamviniciuss/casino-transactions/internal/module/transaction/core"
+	"github.com/iamviniciuss/casino-transactions/pkg/shared/http"
 )
 
 var (

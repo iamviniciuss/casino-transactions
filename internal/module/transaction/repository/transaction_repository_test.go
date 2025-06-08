@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/iamviniciuss/casino-transactions/internal/core"
+	"github.com/iamviniciuss/casino-transactions/internal/module/transaction/core"
 	"github.com/iamviniciuss/casino-transactions/pkg/test_utils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

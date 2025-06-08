@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/iamviniciuss/casino-transactions/internal/api/http"
-	"github.com/iamviniciuss/casino-transactions/internal/api/router"
-	"github.com/iamviniciuss/casino-transactions/internal/repository"
+	"github.com/iamviniciuss/casino-transactions/internal/module/transaction/api/router"
+	"github.com/iamviniciuss/casino-transactions/internal/module/transaction/repository"
 	"github.com/iamviniciuss/casino-transactions/pkg/config"
+	"github.com/iamviniciuss/casino-transactions/pkg/shared/http"
 )
 
 func main() {

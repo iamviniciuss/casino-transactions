@@ -5,7 +5,7 @@ import (
 	"errors"
 	"log"
 
-	"github.com/iamviniciuss/casino-transactions/internal/core"
+	"github.com/iamviniciuss/casino-transactions/internal/module/transaction/core"
 )
 
 var (

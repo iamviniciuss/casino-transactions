@@ -3,7 +3,7 @@ package use_case
 import (
 	"testing"
 
-	"github.com/iamviniciuss/casino-transactions/internal/core"
+	"github.com/iamviniciuss/casino-transactions/internal/module/transaction/core"
 	"github.com/iamviniciuss/casino-transactions/pkg/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"

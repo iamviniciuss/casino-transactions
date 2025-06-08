@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/iamviniciuss/casino-transactions/internal/core"
+	"github.com/iamviniciuss/casino-transactions/internal/module/transaction/core"
 	_ "github.com/lib/pq"
 )
 

@@ -1,4 +1,4 @@
-package consumer
+package message_broker
 
 import (
 	"context"
@@ -7,7 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/iamviniciuss/casino-transactions/internal/core"
+	consumer1 "github.com/iamviniciuss/casino-transactions/internal/module/transaction/consumer"
+	"github.com/iamviniciuss/casino-transactions/internal/module/transaction/core"
 	"github.com/iamviniciuss/casino-transactions/pkg/test_utils"
 	"github.com/segmentio/kafka-go"
 	"github.com/stretchr/testify/assert"
@@ -62,7 +63,7 @@ func TestKafkaConsumer_Start(t *testing.T) {
 	waitForConsumerReady()
 	cancelConsumer()
 
-	var data ProcessTransactionHandlerInput
+	var data consumer1.ProcessTransactionHandlerInput
 	err = json.Unmarshal(handler.value, &data)
 	require.NoError(t, err)
 

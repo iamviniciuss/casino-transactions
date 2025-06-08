@@ -1,4 +1,4 @@
-package consumer
+package message_broker
 
 import (
 	"context"

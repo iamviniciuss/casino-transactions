@@ -3,7 +3,7 @@ package controller
 import (
 	"context"
 
-	"github.com/iamviniciuss/casino-transactions/internal/api/http"
+	"github.com/iamviniciuss/casino-transactions/pkg/shared/http"
 )
 
 type HealthCheckController struct {

@@ -3,7 +3,7 @@ package mocks
 import (
 	"context"
 
-	"github.com/iamviniciuss/casino-transactions/internal/core"
+	"github.com/iamviniciuss/casino-transactions/internal/module/transaction/core"
 	"github.com/stretchr/testify/mock"
 )
 

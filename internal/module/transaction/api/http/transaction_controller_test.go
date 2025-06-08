@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	httpService "github.com/iamviniciuss/casino-transactions/internal/api/http"
-	"github.com/iamviniciuss/casino-transactions/internal/repository"
+	"github.com/iamviniciuss/casino-transactions/internal/module/transaction/repository"
+	httpService "github.com/iamviniciuss/casino-transactions/pkg/shared/http"
 	"github.com/iamviniciuss/casino-transactions/pkg/test_utils"
 	"github.com/stretchr/testify/assert"
 )
