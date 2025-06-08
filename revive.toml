@@ -1,0 +1,18 @@
+ignoreGeneratedHeader = true
+
+[rule.blank-imports]
+[rule.context-as-argument]
+[rule.context-keys-type]
+[rule.dot-imports]
+[rule.error-strings]
+[rule.errorf]
+[rule.exported]
+[rule.if-return]
+[rule.increment-decrement]
+[rule.indent-error-flow]
+[rule.range-val-in-closure]
+[rule.receiver-naming]
+[rule.time-naming]
+[rule.var-naming]
+[rule.var-declaration]
+[rule.unexported-return]

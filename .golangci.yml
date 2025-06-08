@@ -43,12 +43,9 @@ linters:
     - funcorder
 
 linters-settings:
-  gocyclo:
-    min-complexity: 15
 
   revive:
-    severity: warning
-    confidence: 0.8
+    config: revive.toml
 
 issues:
   exclude-use-default: false
