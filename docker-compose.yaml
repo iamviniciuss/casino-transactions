@@ -13,11 +13,20 @@ services:
       - 9095:9095
     environment:
       - KAFKA_URL=kafka:29092
+      # OpenTelemetry Configuration
+      - OTEL_EXPORTER_OTLP_ENDPOINT=host.docker.internal:4318
+      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+      - OTEL_SERVICE_NAME=casino-api
+      - OTEL_SERVICE_VERSION=1.0.0
+      - OTEL_RESOURCE_ATTRIBUTES=service.name=casino-api,service.version=1.0.0,deployment.environment=dev
+      - OTEL_TRACES_EXPORTER=otlp
+      - OTEL_METRICS_EXPORTER=otlp
+      - OTEL_LOGS_EXPORTER=otlp
     depends_on:
       zookeeper: 
         condition: service_healthy
     networks:
-      - casino-net
+      - casino-network
 
   casino-consumer: 
     build:
@@ -29,11 +38,20 @@ services:
       - ./:/app
     environment:
       - KAFKA_URL=kafka:29092
+      # OpenTelemetry Configuration
+      - OTEL_EXPORTER_OTLP_ENDPOINT=host.docker.internal:4318
+      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+      - OTEL_SERVICE_NAME=casino-consumer
+      - OTEL_SERVICE_VERSION=1.0.0
+      - OTEL_RESOURCE_ATTRIBUTES=service.name=casino-consumer,service.version=1.0.0,deployment.environment=dev
+      - OTEL_TRACES_EXPORTER=otlp
+      - OTEL_METRICS_EXPORTER=otlp
+      - OTEL_LOGS_EXPORTER=otlp
     depends_on:
       zookeeper: 
         condition: service_healthy
     networks:
-      - casino-net
+      - casino-network
   
   postgres:
     image: postgres:15
@@ -48,7 +66,7 @@ services:
       - .docker/pg:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
-      - casino-net
+      - casino-network
 
   zookeeper:
     image: "confluentinc/cp-zookeeper:latest"
@@ -65,7 +83,7 @@ services:
       timeout: 5s
       retries: 3
     networks:
-      - casino-net
+      - casino-network
 
   kafka:
     image: "confluentinc/cp-enterprise-kafka:latest"
@@ -89,7 +107,7 @@ services:
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 100
       CONFLUENT_METRICS_ENABLE: 'false'
     networks:
-      - casino-net
+      - casino-network
 
   kafka-producer:
     build:
@@ -98,11 +116,251 @@ services:
     depends_on:
       - kafka
     networks:
-      - casino-net
+      - casino-network
+
+  # SigNoz Services - Profile: monitoring
+  # signoz-init-clickhouse:
+  #   profiles: ["monitoring"]
+  #   image: clickhouse/clickhouse-server:24.1.2-alpine
+  #   container_name: signoz-init-clickhouse
+  #   command:
+  #     - bash
+  #     - -c
+  #     - |
+  #       version="v0.0.1"
+  #       node_os=$$(uname -s | tr '[:upper:]' '[:lower:]')
+  #       node_arch=$$(uname -m | sed s/aarch64/arm64/ | sed s/x86_64/amd64/)
+  #       echo "Fetching histogram-binary for $${node_os}/$${node_arch}"
+  #       cd /tmp
+  #       wget -O histogram-quantile.tar.gz "https://github.com/SigNoz/signoz/releases/download/histogram-quantile%2F$${version}/histogram-quantile_$${node_os}_$${node_arch}.tar.gz"
+  #       tar -xvzf histogram-quantile.tar.gz
+  #       mv histogram-quantile /var/lib/clickhouse/user_scripts/histogramQuantile
+  #   restart: on-failure
+  #   volumes:
+  #     - ./signoz/common/clickhouse/user_scripts:/var/lib/clickhouse/user_scripts/
+  #   networks:
+  #     - casino-network
+
+  # signoz-zookeeper:
+  #   profiles: ["monitoring"]
+  #   image: bitnami/zookeeper:3.7.1
+  #   container_name: signoz-zookeeper
+  #   user: root
+  #   environment:
+  #     - ZOO_SERVER_ID=1
+  #     - ALLOW_ANONYMOUS_LOGIN=yes
+  #     - ZOO_AUTOPURGE_INTERVAL=1
+  #     - ZOO_ENABLE_PROMETHEUS_METRICS=yes
+  #     - ZOO_PROMETHEUS_METRICS_PORT_NUMBER=9141
+  #   volumes:
+  #     - casino_signoz_zookeeper:/bitnami/zookeeper
+  #   healthcheck:
+  #     test:
+  #       - CMD-SHELL
+  #       - curl -s -m 2 http://localhost:8080/commands/ruok | grep error | grep null
+  #     interval: 30s
+  #     timeout: 5s
+  #     retries: 3
+  #   restart: unless-stopped
+  #   logging:
+  #     options:
+  #       max-size: 50m
+  #       max-file: "3"
+  #   labels:
+  #     signoz.io/scrape: "true"
+  #     signoz.io/port: "9141"
+  #     signoz.io/path: "/metrics"
+  #   networks:
+  #     - casino-network
+
+  # signoz-clickhouse:
+  #   profiles: ["monitoring"]
+  #   image: clickhouse/clickhouse-server:24.1.2-alpine
+  #   container_name: signoz-clickhouse
+  #   tty: true
+  #   volumes:
+  #     - ./signoz/common/clickhouse/config.xml:/etc/clickhouse-server/config.xml
+  #     - ./signoz/common/clickhouse/users.xml:/etc/clickhouse-server/users.xml
+  #     - ./signoz/common/clickhouse/custom-function.xml:/etc/clickhouse-server/custom-function.xml
+  #     - ./signoz/common/clickhouse/user_scripts:/var/lib/clickhouse/user_scripts/
+  #     - ./signoz/common/clickhouse/cluster.xml:/etc/clickhouse-server/config.d/cluster.xml
+  #     - casino_signoz_clickhouse:/var/lib/clickhouse/
+  #   depends_on:
+  #     signoz-init-clickhouse:
+  #       condition: service_completed_successfully
+  #     signoz-zookeeper:
+  #       condition: service_healthy
+  #   healthcheck:
+  #     test:
+  #       - CMD
+  #       - wget
+  #       - --spider
+  #       - -q
+  #       - 0.0.0.0:8123/ping
+  #     interval: 30s
+  #     timeout: 5s
+  #     retries: 3
+  #   restart: unless-stopped
+  #   logging:
+  #     options:
+  #       max-size: 50m
+  #       max-file: "3"
+  #   labels:
+  #     signoz.io/scrape: "true"
+  #     signoz.io/port: "9363"
+  #     signoz.io/path: "/metrics"
+  #   ulimits:
+  #     nproc: 65535
+  #     nofile:
+  #       soft: 262144
+  #       hard: 262144
+  #   networks:
+  #     - casino-network
+
+  # signoz-schema-migrator-sync:
+  #   profiles: ["monitoring"]
+  #   image: signoz/signoz-schema-migrator:v0.111.42
+  #   container_name: signoz-schema-migrator-sync
+  #   command:
+  #     - sync
+  #     - --dsn=tcp://signoz-clickhouse:9000
+  #     - --up=
+  #   depends_on:
+  #     signoz-clickhouse:
+  #       condition: service_healthy
+  #   restart: "no"
+  #   logging:
+  #     options:
+  #       max-size: 50m
+  #       max-file: "3"
+  #   networks:
+  #     - casino-network
+
+  # signoz:
+  #   profiles: ["monitoring"]
+  #   image: signoz/signoz:latest
+  #   container_name: signoz
+  #   entrypoint: 
+  #     - /bin/sh
+  #     - -c
+  #     - |
+  #       echo "Waiting for schema migration to complete..."
+  #       sleep 30
+        
+  #       # Find signoz binary location
+  #       SIGNOZ_BIN=$$(find / -name "signoz" -type f -executable 2>/dev/null | head -1)
+  #       if [ -z "$$SIGNOZ_BIN" ]; then
+  #         echo "Looking for signoz binary in common locations..."
+  #         for path in /bin/signoz /usr/bin/signoz /usr/local/bin/signoz /signoz; do
+  #           if [ -f "$$path" ] && [ -x "$$path" ]; then
+  #             SIGNOZ_BIN=$$path
+  #             break
+  #           fi
+  #         done
+  #       fi
+        
+  #       if [ -z "$$SIGNOZ_BIN" ]; then
+  #         echo "Error: signoz binary not found"
+  #         exit 1
+  #       fi
+        
+  #       echo "Found signoz binary at: $$SIGNOZ_BIN"
+  #       exec "$$SIGNOZ_BIN" --config=/root/config/prometheus.yml
+  #   ports:
+  #     - "3301:8080"  # Interface do SigNoz
+  #     - "4320:4320"  # OpAMP endpoint
+  #   volumes:
+  #     - ./signoz/common/signoz/prometheus.yml:/root/config/prometheus.yml
+  #     - ./signoz/common/dashboards:/root/config/dashboards
+  #     - casino_signoz_sqlite:/var/lib/signoz/
+  #   environment:
+  #     - SIGNOZ_ALERTMANAGER_PROVIDER=signoz
+  #     - SIGNOZ_TELEMETRYSTORE_CLICKHOUSE_DSN=tcp://signoz-clickhouse:9000
+  #     - SIGNOZ_SQLSTORE_SQLITE_PATH=/var/lib/signoz/signoz.db
+  #     - DASHBOARDS_PATH=/root/config/dashboards
+  #     - STORAGE=clickhouse
+  #     - GODEBUG=netdns=go
+  #     - TELEMETRY_ENABLED=true
+  #     - DEPLOYMENT_TYPE=docker-standalone-amd
+  #     - OTEL_SEMCONV_STABILITY_OPT_IN=messaging/dup
+  #   depends_on:
+  #     signoz-clickhouse:
+  #       condition: service_healthy
+  #   healthcheck:
+  #     test:
+  #       - CMD
+  #       - wget
+  #       - --spider
+  #       - -q
+  #       - localhost:8080/api/v1/health
+  #     interval: 30s
+  #     timeout: 5s
+  #     retries: 3
+  #   restart: unless-stopped
+  #   logging:
+  #     options:
+  #       max-size: 50m
+  #       max-file: "3"
+  #   networks:
+  #     - casino-network
+
+  # signoz-otel-collector:
+  #   profiles: ["monitoring"]
+  #   image: signoz/signoz-otel-collector:v0.111.42
+  #   container_name: signoz-otel-collector
+  #   command:
+  #     - --config=/etc/otel-collector-config.yaml
+  #     - --manager-config=/etc/manager-config.yaml
+  #     - --copy-path=/var/tmp/collector-config.yaml
+  #     - --feature-gates=-pkg.translator.prometheus.NormalizeName
+  #   volumes:
+  #     - ./signoz/docker/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+  #     - ./signoz/common/signoz/otel-collector-opamp-config.yaml:/etc/manager-config.yaml
+  #   environment:
+  #     - OTEL_RESOURCE_ATTRIBUTES=host.name=signoz-host,os.type=linux
+  #     - LOW_CARDINAL_EXCEPTION_GROUPING=false
+  #   ports:
+  #     - "4317:4317" # OTLP gRPC receiver
+  #     - "4318:4318" # OTLP HTTP receiver
+  #   depends_on:
+  #     signoz:
+  #       condition: service_healthy
+  #   restart: unless-stopped
+  #   logging:
+  #     options:
+  #       max-size: 50m
+  #       max-file: "3"
+  #   networks:
+  #     - casino-network
+
+  # signoz-schema-migrator-async:
+  #   profiles: ["monitoring"]
+  #   image: signoz/signoz-schema-migrator:v0.111.42
+  #   container_name: signoz-schema-migrator-async
+  #   command:
+  #     - async
+  #     - --dsn=tcp://signoz-clickhouse:9000
+  #     - --up=
+  #   depends_on:
+  #     signoz-clickhouse:
+  #       condition: service_healthy
+  #   restart: on-failure
+  #   logging:
+  #     options:
+  #       max-size: 50m
+  #       max-file: "3"
+  #   networks:
+  #     - casino-network
 
 volumes:
   postgres_data:
+  # casino_signoz_clickhouse:
+  #   name: casino-signoz-clickhouse
+  # casino_signoz_sqlite:
+  #   name: casino-signoz-sqlite
+  # casino_signoz_zookeeper:
+  #   name: casino-signoz-zookeeper
 
 networks:
-  casino-net:
+  casino-network:
     driver: bridge

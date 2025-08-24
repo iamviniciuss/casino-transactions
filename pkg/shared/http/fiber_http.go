@@ -1,10 +1,14 @@
 package http
 
 import (
+	"log"
 	"net"
+	"os"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/iamviniciuss/casino-transactions/pkg/shared/telemetry"
 	"github.com/valyala/fasthttp"
 )
 
@@ -12,12 +16,30 @@ type FiberHttp struct {
 	Port         int
 	app          *fiber.App
 	CustomParams QueryParams
+	shutdown     func()
 }
 
 func NewFiberHttp() *FiberHttp {
 	f := new(FiberHttp)
-	f.app = fiber.New()
+	
+	// Initialize OpenTelemetry
+	serviceName := getEnvWithDefault("OTEL_SERVICE_NAME", "casino-api")
+	serviceVersion := getEnvWithDefault("OTEL_SERVICE_VERSION", "1.0.0")
+	f.shutdown = telemetry.InitOTEL(serviceName, serviceVersion)
+	
+	f.app = fiber.New(fiber.Config{
+		EnableTrustedProxyCheck: true,
+		TrustedProxies:          []string{"0.0.0.0", "127.0.0.1"},
+	})
 
+	// OpenTelemetry middleware (should be first)
+	f.app.Use(telemetry.FiberTraceMiddleware(serviceName))
+	
+	// Logging middleware
+	f.app.Use(logger.New(logger.Config{
+		Format: "[${time}] ${status} - ${method} ${path} - ${latency}\n",
+	}))
+	
 	f.app.Use(cors.New())
 	f.app.Group("/", func(c *fiber.Ctx) error {
 		f.CustomParams = NewFiberQueryParams(c.Context().QueryArgs())
@@ -36,6 +58,7 @@ func NewFiberHttp() *FiberHttp {
 		return c.Next()
 	})
 
+	log.Printf("OpenTelemetry initialized for service: %s", serviceName)
 	return f
 }
 
@@ -82,6 +105,10 @@ func (f *FiberHttp) Listen(listener net.Listener) error {
 }
 
 func (f *FiberHttp) Shutdown() error {
+	// Shutdown OpenTelemetry first
+	if f.shutdown != nil {
+		f.shutdown()
+	}
 	return f.app.Shutdown()
 }
 
@@ -104,4 +131,11 @@ func (fqp *FiberQueryParams) GetParam(key string) []byte {
 
 func (fqp *FiberQueryParams) AddParam(key string, value string) {
 	fqp.Args.Add(key, value)
+}
+
+func getEnvWithDefault(key, defaultValue string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return defaultValue
 }
